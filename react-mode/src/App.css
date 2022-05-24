@@ -1,0 +1,25 @@
+.content{
+  display: flex;
+  flex-flow: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  font-size: 16px;
+  transition: all .4;
+}
+.content.active{
+  background-color: #D8F1A0;
+}
+.content.inactive{
+  background-color: #F3C178;
+}
+h1{
+  font-size: 3em;
+}
+h1.inactive{
+  color: #FE5E41;
+}
+h1.active{
+  color: #00A878;
+}
