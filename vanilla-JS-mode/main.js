@@ -16,7 +16,7 @@ const checkUserActivity = (
       )
     }
 
-    const handleActivity = () => {
+    const handleActivity = () => { 
       userIsActive = true;
       if (timer) {
         clearTimeout(timer);

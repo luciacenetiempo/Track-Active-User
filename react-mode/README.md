@@ -1,70 +1,99 @@
-# Getting Started with Create React App
+# Track Active User
+Track if the user is still active on the page in react version!
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The goal is to know if the user is still carrying out actions on our page or if he has stopped his navigation
 
-## Available Scripts
+## React Mode
+The same game can be played with react and it's more fun.
+All I'm going to do is create a React Hook called **useIsActive**.
 
-In the project directory, you can run:
+### The Hook
+So, in my src folder I create a file called `useIsActive.js`
+I import the native functionality of react **useState, useEffect, useRef**
 
-### `npm start`
+```javascript
+import {useState, useEffect, useRef} from "react";
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Now I create my hook with an export function that I will call **useIsActive** which takes as a parameter the `time` (expressed in milliseconds) and which returns as a result the user's status as a boolean value.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+```javascript
+export function useIsActive(time) {
+    return userIsActive;
+}
+```
 
-### `npm test`
+Inside this function, to change the user's status we use react's useState functionality.
+So I create my state called userIsActive, define the function that will handle it by calling it "setActive" and set it by default with useState in true.
+I also create a reference for my timer and map in an array the types of events that will signal me that the user is active.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```javascript
+const [userIsActive, setActive] = useState(true);
+const timer = useRef();
+const eventsList = [
+  'keypress', 'mousemove', 'touchmove', 'click', 'scroll'
+]
+```
 
-### `npm run build`
+With useEffect I'm going to manage my user's status changes based on his actions, maintaining the same logic used for the vanilla javascript version.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+For each event mapped in the eventsList array I launch an event listener that executes the `handleActivity` callback.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Since **handleActivity** is called as a callback when the user executes a page action, I set his state to true with `setActive (true)`, then I check if there is already a timer and stop it with the `clearTimeout` and I initialize a new one with the `setTimeout` which will set the user's status to false after the time defined in milliseconds that we are passing to our hook.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```javascript
+    useEffect(
+        () => { 
+          const handleActivity = () => {
+            setActive(true)
+            if(timer.current){
+              window.clearTimeout(timer.current)
+            }
+            timer.current = window.setTimeout(
+              () => {
+                setActive(false)
+              }, time
+            )
+          }
+          eventsList.forEach(
+            (event) => document.addEventListener(event, handleActivity)
+          )
 
-### `npm run eject`
+          return () => {
+            eventsList.forEach(
+              (event) => document.removeEventListener(event, handleActivity)
+            )
+          }
+        }, [time]
+    );
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+As written above the result of my hook will be a boolean value. Let's move on to the visual result
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### What happens in App.js?
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+First of all I import my hook
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```javascript
+import {useIsActive} from './useIsActive';
+```
 
-## Learn More
+Then in the App function I create a const that will manage the result of the hook to allow our application to react and manipulate the result according to the user state.
+Based on the `true` or `false` that is returned by `userIsActive` the container and the h1 will have an active or inactive class, I also change the message shown inside the h1.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```javascript
+function App() {
+  const userIsActive = useIsActive(3000);
+  return (
+    <>
+      <div  className={`content ${userIsActive ? 'active' : 'inactive'}`}>
+        <h1 className={userIsActive ? 'active' : 'inactive'}>
+          {userIsActive ? 'Ehila!' : 'Are you still here?'}
+        </h1>
+      </div>
+    </> 
+  );
+}
+export default App;
+```
